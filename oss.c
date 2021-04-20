@@ -37,29 +37,27 @@ int main(){
 	
 
 	get_shm();
-	//log_message("shared memory created\n");
 	get_sem();
-	//log_message("semaphores created\n");
 
 	init_shm();
-	//log_message("shared memory init\n");
 	init_sem();
-	//log_message("semaphores init\n");
 
 	alarm(5);
 
 	while (1) {
 		if (num_proc == 0) {
 			next_fork_nano = rand() % 5000000;
-			printf("%d\n", num_proc);
 			fork_next();
 		}
 		else if (num_proc < MAX) {
 			if (time_to_fork()) {
 				fork_next();
-				log_message("Generateing fork time");
+				//log_message("Generateing fork time");
 				next_fork_nano = shm_ptr->clock_nano + (rand() % 50000000);
 				normalize_fork_clock();
+				if ((rand() % 10) == 5) {
+					shm_ptr->clock_seconds += 1;
+				}
 			}
 		}
 
@@ -71,7 +69,6 @@ int main(){
 			allocation_handler();
 			deadlock_check();
 			detections++;
-			print_allocations();
 		}
 
 		sem_signal(RES_SEM);
@@ -183,7 +180,7 @@ void deadlock_check() {
 			int res = shm_ptr->wants[i];
 			while (1) {
 				for (int j = 0; j < MAX_RESOURCE; j++) {
-					if (j != i) {
+					if ((rand() % 10) == 1) {
 						if (shm_ptr->res[res].allocated[j] > 0 && shm_ptr->sleep[j] == true) {
 							sprintf(buffer, "Master has detected a deadlock at P%d and will be killed to free R%d for P%d\n", j, res, i);
 							log_message(buffer);
@@ -318,8 +315,8 @@ void kill_pids() {
 }
 
 void cleanup() {
-	//print_allocations();
 	report();
+	print_allocations();
 	fclose(fp);
 	kill_pids();
 	sleep(1);
