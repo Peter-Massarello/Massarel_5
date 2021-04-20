@@ -88,6 +88,26 @@ int main(){
 	return 0;
 }
 
+void report() {
+	double temp;
+	sprintf(buffer, "\n\nREPORT:\n\n");
+	fputs(buffer, fp);
+	sprintf(buffer, "Instantly granted resources: %d times\n", immediate);
+	fputs(buffer, fp);
+	sprintf(buffer, "Processes were granted resources after waiting %d times\n", after_waiting);
+	fputs(buffer, fp);
+	sprintf(buffer, "Deadlock detection ran %d times\n", detections);
+	fputs(buffer, fp);
+	sprintf(buffer, "%d processes were killed by deadlock\n", deadlock_kill);
+	fputs(buffer, fp);
+	temp = (double)deadlock_kill / (double)detections;
+	temp *= 100;
+	sprintf(buffer, "%.2f percent of time deadlock detection was run, deadlock was detected and a process had to be killed\n", temp);
+	fputs(buffer, fp);
+	fputs("0 percent indicates that there was never deadlock in the system\n", fp);
+
+}
+
 void increment_shm_clock() {
 	unsigned long nano = 1 + (rand() % 100000000);
 	shm_ptr->clock_nano += nano;
@@ -299,6 +319,7 @@ void kill_pids() {
 
 void cleanup() {
 	//print_allocations();
+	report();
 	fclose(fp);
 	kill_pids();
 	sleep(1);
